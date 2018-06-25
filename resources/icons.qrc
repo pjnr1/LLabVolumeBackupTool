@@ -1,0 +1,7 @@
+<RCC>
+    <qresource>
+        <file>icons/harddrive.svg</file>
+        <file>icons/sd-card.svg</file>
+        <file>icons/memory-card.svg</file>
+    </qresource>
+</RCC>
