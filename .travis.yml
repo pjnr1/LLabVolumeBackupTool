@@ -24,6 +24,5 @@ before_script:
   - cd release
   - cmake .. -G "Unix Makefiles" -DCMAKE_BUILD_TYPE=Release
   - cmake --build . # make
-  - ctest .         # make test
 
-script: make && make test
+script: make
