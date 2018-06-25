@@ -3,13 +3,11 @@ set (CMAKE_CXX_STANDARD 14)
 
 cmake_policy(SET CMP0020 NEW)
 
-## Warning, uses clang compiler!
-set(CMAKE_C_COMPILER "/usr/bin/clang")
-set(CMAKE_CXX_COMPILER "/usr/bin/clang++")
+
 ## Specify Qt build directory
 set(QT_ROOT_DIR "/usr/local/opt/qt")
 
-set(CMAKE_PREFIX_PATH "${QT_ROOT_DIR}/clang_64/lib/cmake/")
+set(CMAKE_PREFIX_PATH "${QT_ROOT_DIR}/lib/cmake/")
 
 project(LLabVolumeUpBacker)
 
@@ -35,8 +33,8 @@ set(CMAKE_AUTOUIC ON)
 set(CMAKE_AUTORCC ON)
 
 # Find Qt5Core and Qt5Widgets
-find_package(Qt5Core REQUIRED)
-find_package(Qt5Widgets REQUIRED)
+find_package(Qt5Core REQUIRED CONFIG)
+find_package(Qt5Widgets REQUIRED CONFIG)
 
 # For finding Qt includes
 include_directories(${CMAKE_CURRENT_SOURCE_DIR} LIB_SOURCES LIB_HEADERS)
@@ -131,7 +129,7 @@ if(APPLE)
     # Deploy with macdeployqt
     add_custom_command(
                 TARGET ${BUNDLE_TARGET_NAME} POST_BUILD
-                COMMAND ${QT_ROOT_DIR}/clang_64/bin/macdeployqt ${BUNDLE_TARGET_NAME}.app
+                COMMAND ${QT_ROOT_DIR}/bin/macdeployqt ${BUNDLE_TARGET_NAME}.app
                 WORKING_DIRECTORY
                 ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}
                 COMMENT "Running macOs deployment lezgooo"
