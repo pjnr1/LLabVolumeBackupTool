@@ -7,7 +7,7 @@ cmake_policy(SET CMP0020 NEW)
 set(CMAKE_C_COMPILER "/usr/bin/clang")
 set(CMAKE_CXX_COMPILER "/usr/bin/clang++")
 ## Specify Qt build directory
-set(QT_ROOT_DIR "/Applications/Qt/5.10.1")
+set(QT_ROOT_DIR "/usr/local/opt/qt")
 
 set(CMAKE_PREFIX_PATH "${QT_ROOT_DIR}/clang_64/lib/cmake/")
 
