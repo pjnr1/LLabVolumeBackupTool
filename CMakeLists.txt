@@ -19,6 +19,31 @@ file(GLOB LIB_HEADERS lib/*.h)
 
 
 ######################################################################
+## Macos native frameworks
+######################################################################
+if(APPLE)
+    include_directories(/Developer/Headers/FlatCarbon)
+    find_library(CARBON_LIBRARY Carbon)
+    find_library(FOUNDATION_LIBRAY Foundation)
+    find_library(APP_SERVICES_LIBRARY ApplicationServices )
+    if(NOT CARBON_LIBRARY)
+        message(FATAL_ERROR "Carbon not found")
+    endif()
+    if(NOT FOUNDATION_LIBRAY)
+        message(FATAL_ERROR "Foundation not found")
+    endif()
+    if(NOT APP_SERVICES_LIBRARY)
+        message(FATAL_ERROR "ApplicationServices not found")
+    endif()
+    mark_as_advanced(CARBON_LIBRARY FOUNDATION_LIBRAY APP_SERVICES_LIBRARY)
+    SET(MACOS_FRAMEWORKS ${CARBON_LIBRARY} ${FOUNDATION_LIBRAY} ${APP_SERVICES_LIBRARY})
+endif(APPLE)
+
+######################################################################
+## endof Macos native frameworks
+######################################################################
+
+######################################################################
 ## GUI setup
 ######################################################################
 if(WIN32)
@@ -49,17 +74,13 @@ file ( GLOB UIS gui/*.ui)
 file ( GLOB RESOURCES resources/*.qrc)
 
 add_library(${PROJECT_LIB} ${LIB_SOURCES} ${LIB_HEADERS} ${GUI_SRC} ${GUI_H} ${UIS} ${RESOURCES})
+target_link_libraries(${PROJECT_LIB} ${MACOS_FRAMEWORKS})
 target_link_libraries(${PROJECT_LIB} Qt5::Core Qt5::Widgets)
 
 ######################################################################
 ## endof GUI setup
 ######################################################################
 
-# Create executables
-add_executable(${PROJECT_NAME} main.cpp)
-
-# Link libraries
-target_link_libraries(${PROJECT_NAME} ${PROJECT_LIB})
 
 
 
@@ -92,7 +113,7 @@ target_link_libraries(${TEST_EXECUTABLE} ${PROJECT_LIB})
 ######################################################################
 if(APPLE)
     ## Project specific
-    set(BUNDLE_TARGET_NAME ${PROJECT_NAME}-app)
+    set(BUNDLE_TARGET_NAME ${PROJECT_NAME})
     set(BUNDLE_ICON_PATH LLabVolumeBackuper.icns)
 
     ## Generic macOs deployment script
@@ -107,7 +128,7 @@ if(APPLE)
 
 
 
-    file(GLOB QTROOTS ${QT_ROOT_DIR}/clang_64/bin/qmake)
+    file(GLOB QTROOTS ${QT_ROOT_DIR}/clang_64/bin/)
     find_program(QT_QMAKE_EXECUTABLE NAMES qmake PATHS ${QTROOTS})
 
 
@@ -135,8 +156,6 @@ if(APPLE)
                 COMMENT "Running macOs deployment lezgooo"
                 VERBATIM
     )
-
-
 endif()
 ######################################################################
 ## endof macOS deployment
