@@ -1,4 +1,5 @@
 #include <iostream>
+#include <QtCore/qdatetime.h>
 #include "filemanager.h"
 
 /**
@@ -112,5 +113,18 @@ double FileManager::getProgress() {
         return -1;
     } else {
         return (double) m_copiedSoFar / (double) m_totalFileSize;
+    }
+}
+
+bool FileManager::startCopy(const QString &source, const QString &dest) {
+    auto dir = QDir(source);
+    auto dateTime = QDateTime::currentDateTime();
+    auto newDest = dest + "/" + dateTime.toString("yyyyMMdd_HHmm") + "_" +  dir.dirName();
+
+    dir.mkdir(newDest);
+    if (isFolder(newDest)) {
+        return copy(source,newDest,true);
+    } else {
+        return false;
     }
 }

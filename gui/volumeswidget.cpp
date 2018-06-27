@@ -92,8 +92,8 @@ void VolumesWidget::initiateBackup() {
                 auto vol = it->second;
                 m_fileManagers.emplace_back(new FileManager());
                 m_fileManagers.front()->getSizeToCopy(vol->rootPath());
-                QFuture<void> future = QtConcurrent::run(m_fileManagers.front(), &FileManager::copy, vol->rootPath(),
-                                                         m_backupBasePath, true);
+                QFuture<void> future = QtConcurrent::run(m_fileManagers.front(), &FileManager::startCopy, vol->rootPath(),
+                                                         m_backupBasePath);
                 m_futureList.append(future);
             }
         }

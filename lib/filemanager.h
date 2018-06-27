@@ -12,7 +12,7 @@ class FileManager : public QObject {
 public:
     double getProgress();
     unsigned long getSizeToCopy(const QString &source, bool recursive = true);
-
+    bool startCopy(const QString &source, const QString &dest);
     bool copy(const QString &source, const QString &dest, bool recursive = true);
     bool copyFile(const QString& source, const QString& dest, bool override = true);
     bool fileExists(const QString& path);
