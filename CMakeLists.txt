@@ -117,15 +117,19 @@ if(APPLE)
     set(BUNDLE_ICON_PATH LLabVolumeBackuper.icns)
 
     ## Generic macOs deployment script
+
     include(BundleUtilities)
     set(CMAKE_OSX_DEPLOYMENT_TARGET "10.11")
     set(CMAKE_INSTALL_PREFIX ${CMAKE_BINARY_DIR})
-    set(MACOSX_BUNDLE_BUNDLE_NAME ${PROJECT_NAME})
+    # set(MACOSX_BUNDLE_BUNDLE_NAME ${PROJECT_NAME})
     set(MACOSX_BUNDLE_ICON_FILE ${BUNDLE_ICON_PATH})
     set(BUNDLE_ICON ${CMAKE_CURRENT_SOURCE_DIR}/${BUNDLE_ICON_PATH})
     set_source_files_properties(${BUNDLE_ICON} PROPERTIES
             MACOSX_PACKAGE_LOCATION "Resources")
-
+    set(PRINCIPAL_CLASS "NSApplication")
+    set(MACOSX_BUNDLE_GUI_IDENTIFIER "com.llab.volumebackuptool")
+    set(MACOSX_BUNDLE_INFO_STRING "Created with cmake and qt")
+    set(MACOSX_BUNDLE_COPYRIGHT "MIT license")
 
 
     file(GLOB QTROOTS ${QT_ROOT_DIR}/clang_64/bin/)
@@ -134,16 +138,19 @@ if(APPLE)
 
     # Create executables for RTOC
     add_executable(${BUNDLE_TARGET_NAME} MACOSX_BUNDLE ${BUNDLE_ICON} main.cpp)
+    set_target_properties(${BUNDLE_TARGET_NAME} PROPERTIES MACOSX_BUNDLE_INFO_PLIST ${CMAKE_CURRENT_SOURCE_DIR}/MacOSXBundleInfo.plist.in)
 
     # Link OpenCV libraries
     target_link_libraries(${BUNDLE_TARGET_NAME} ${PROJECT_LIB})
 
     # Clean deployment destination
-    if(EXISTS ${CMAKE_CURRENT_BINARY_DIR}/${BUNDLE_TARGET_NAME})
+    if(EXISTS ${CMAKE_CURRENT_BINARY_DIR}/${BUNDLE_TARGET_NAME}.app/)
+        message("${CMAKE_CURRENT_BINARY_DIR}/${BUNDLE_TARGET_NAME}.app/")
         add_custom_command (
                 TARGET ${BUNDLE_TARGET_NAME} POST_BUILD
-                COMMAND ${CMAKE_COMMAND} -E time remove ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/${BUNDLE_TARGET_NAME}.app
+                COMMAND ${CMAKE_COMMAND} -E time remove ${CMAKE_CURRENT_BINARY_DIR}/${BUNDLE_TARGET_NAME}.app/Contents/Frameworks
                 COMMENT "Clean macos deploy"
+                VERBATIM
         )
     endif()
 
