@@ -51,7 +51,9 @@ bool FileManager::copy(const QString &source, const QString &dest, bool recursiv
     return true;
 }
 
-bool FileManager::remove(const )
+bool FileManager::remove(const QString &source) {
+    return false;
+}
 
 /**
  * Check if path exists and is a file

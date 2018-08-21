@@ -191,9 +191,11 @@ QString VolumesWidget::getBackupDoneMsg(int timeElapsed) {
 int VolumesWidget::displayBackupPathNotFoundWarning() {
     QString message = "";
     message += "Can't run backup!\n";
-    message += "Destination path is unavailable..";
-    message += "Path: ";
-    message += m_backupBasePath + "\n";
+    message += "Destination path is unavailable..\n";
+    if (!m_backupBasePath.isEmpty()) {
+        message += "Path: ";
+        message += m_backupBasePath + "\n";
+    }
     message += "Check your settings!";
 
     QMessageBox* msgBox = new QMessageBox(
@@ -211,8 +213,10 @@ int VolumesWidget::displayBackupPathNotWritableWarning() {
     QString message = "";
     message += "Can't run backup!\n";
     message += "Destination path is not writable..";
-    message += "Path: ";
-    message += m_backupBasePath + "\n";
+    if (!m_backupBasePath.isEmpty()) {
+        message += "Path: ";
+        message += m_backupBasePath + "\n";
+    }
     message += "Check your settings and write-permissions!";
 
     QMessageBox* msgBox = new QMessageBox(
@@ -229,8 +233,10 @@ int VolumesWidget::displayBackupPathNotWritableWarning() {
 int VolumesWidget::displayAreYouSureToRunQuestion() {
     QString message = "";
     message += "Destination path is: ";
-    message += m_backupBasePath;
-    message += "\n";
+    if (!m_backupBasePath.isEmpty()) {
+        message += "Path: ";
+        message += m_backupBasePath + "\n";
+    }
     message += "Are you sure you want to run the backup?";
 
     QMessageBox* msgBox = new QMessageBox(

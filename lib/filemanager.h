@@ -18,6 +18,7 @@ public:
     bool startClean();
     bool startClean(const QString &source);
     bool copy(const QString &source, const QString &dest, bool recursive = true);
+    bool remove(const QString &source);
     bool copyFile(const QString& source, const QString& dest, bool override = true);
     bool fileExists(const QString& path);
     bool isFolder(const QString& path);

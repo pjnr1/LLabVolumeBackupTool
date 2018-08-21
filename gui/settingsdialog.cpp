@@ -45,14 +45,19 @@ void SettingsDialog::onSetBackUpPathClicked() {
 
 void SettingsDialog::updateSettingsGui() {
     QFile file(c_settingsPath);
-    file.open(QIODevice::ReadOnly);
-    QDataStream in(&file);    // read the data serialized from the file
-    QString str;
-    bool cleanCheckBox;
-    in >> str;
-    in >> cleanCheckBox;
-    m_backupPath->setText(str);
-    m_cleanAfterCopy->setChecked(cleanCheckBox);
+    if (file.exists()) {
+        file.open(QIODevice::ReadOnly);
+        QDataStream in(&file);    // read the data serialized from the file
+        QString str;
+        bool cleanCheckBox;
+        in >> str;
+        in >> cleanCheckBox;
+        m_backupPath->setText(str);
+        m_cleanAfterCopy->setChecked(cleanCheckBox);
+        file.close();
+    } else {
+        updateSettings();
+    }
 }
 
 void SettingsDialog::updateSettings() {
@@ -61,6 +66,7 @@ void SettingsDialog::updateSettings() {
     QDataStream out(&file);   // we will serialize the data into the file
     out << m_backupPath->text();
     out << m_cleanAfterCopy->isChecked();
+    file.close();
 }
 
 int SettingsDialog::exec() {
