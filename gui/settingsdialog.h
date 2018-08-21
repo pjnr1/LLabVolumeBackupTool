@@ -5,6 +5,7 @@
 #include <QDialog>
 #include <QLineEdit>
 #include <QFileDialog>
+#include <QCheckBox>
 
 
 namespace Ui {
@@ -20,6 +21,7 @@ public:
     ~SettingsDialog();
 
     QString getBackupPath();
+    bool getCleanAfterCopy();
 
     int exec() override;
 
@@ -27,8 +29,9 @@ private:
     Ui::SettingsDialog *ui;
 
     QLineEdit* m_backupPath;
+    QCheckBox* m_cleanAfterCopy;
 
-    void updateLineEdit();
+    void updateSettingsGui();
     void updateSettings();
 
     QString c_settingsPath;

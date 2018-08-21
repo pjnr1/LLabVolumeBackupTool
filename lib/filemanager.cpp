@@ -51,6 +51,8 @@ bool FileManager::copy(const QString &source, const QString &dest, bool recursiv
     return true;
 }
 
+bool FileManager::remove(const )
+
 /**
  * Check if path exists and is a file
  * @param path
@@ -102,6 +104,12 @@ void FileManager::calcSizeToCopy(const QString &source, bool recursive) {
     }
 }
 
+unsigned long FileManager::getSizeToCopy(bool recursive) {
+    m_totalFileSize = 0;
+    calcSizeToCopy(m_source, recursive);
+    return m_totalFileSize;
+}
+
 unsigned long FileManager::getSizeToCopy(const QString &source, bool recursive) {
     m_totalFileSize = 0;
     calcSizeToCopy(source, recursive);
@@ -127,4 +135,29 @@ bool FileManager::startCopy(const QString &source, const QString &dest) {
     } else {
         return false;
     }
+}
+
+bool FileManager::startCopy() {
+    return startCopy(m_source, m_destination);
+}
+
+bool FileManager::startClean(const QString &source) {
+    auto dir = QDir(source);
+    QFileInfoList files = dir.entryInfoList(QDir::AllEntries | QDir::NoDotAndDotDot);
+    for(const auto& f : files) {
+        dir.remove(f.filePath());
+    }
+    return true;
+}
+
+bool FileManager::startClean() {
+    return startClean(m_source);
+}
+
+void FileManager::setSource(const QString& path) {
+    m_source = path;
+}
+
+void FileManager::setDestination(const QString& path) {
+    m_destination = path;
 }

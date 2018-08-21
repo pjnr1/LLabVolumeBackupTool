@@ -30,10 +30,6 @@ VolumesWidget::VolumesWidget(QWidget *parent) :
     m_vm = new VolumeManager();
     connect(ui->refreshButton_2, &QPushButton::released, this, &VolumesWidget::refreshMountedVolumes);
 
-    // Setup progress bar
-    ui->progressBar->setRange(0,100);
-    ui->progressBar->setEnabled(false);
-
     auto m_timer = new QTimer();
     m_timer->setInterval(250);
     connect(m_timer, &QTimer::timeout, this, &VolumesWidget::updateProgressBar);
@@ -73,7 +69,7 @@ void VolumesWidget::initiateBackup() {
         displayNoVolumeSelectedWarning();
         return;
     }
-    QFileInfo fileInfo = QFileInfo(m_backupBasePath);
+    auto fileInfo = QFileInfo(m_backupBasePath);
     if (!fileInfo.exists()) {
         displayBackupPathNotFoundWarning();
         return;
@@ -86,14 +82,24 @@ void VolumesWidget::initiateBackup() {
     if (displayAreYouSureToRunQuestion()) {
         m_backupInProgress = true;
         m_time.start();
+
+        m_progressDialog = new QProgressDialog("Copying files...", "Abort", 0, 100, this);
+        m_progressDialog->setWindowModality(Qt::WindowModal);
+
         for (auto const& v : m_list->selectedItems()) {
             auto it = m_listMap.find(v);
             if (it != m_listMap.end()) {
                 auto vol = it->second;
+                auto fileInfo = QFileInfo(vol->rootPath());
+                if (m_cleanAfterCopy && !fileInfo.isWritable()) {
+                    displaySourcePathNotWritableWarning();
+                    return;
+                }
                 m_fileManagers.emplace_back(new FileManager());
-                m_fileManagers.front()->getSizeToCopy(vol->rootPath());
-                QFuture<void> future = QtConcurrent::run(m_fileManagers.front(), &FileManager::startCopy, vol->rootPath(),
-                                                         m_backupBasePath);
+                m_fileManagers.front()->setSource(vol->rootPath());
+                m_fileManagers.front()->setDestination(m_backupBasePath);
+                m_fileManagers.front()->getSizeToCopy();
+                QFuture<void> future = QtConcurrent::run(m_fileManagers.front(), &FileManager::startCopy);
                 m_futureList.append(future);
             }
         }
@@ -101,23 +107,17 @@ void VolumesWidget::initiateBackup() {
 }
 
 void VolumesWidget::filterList(QString filterString) {
-    hideAll();
+    for(int row(0); row < m_list->count(); row++) {
+        m_list->item(row)->setHidden(true);
+    }
     QList<QListWidgetItem*> matches = ( m_list->findItems(filterString, Qt::MatchFlag::MatchContains) );
     for (auto item : matches) {
         item->setHidden(false);
     }
 }
 
-void VolumesWidget::hideAll() {
-    for(int row(0); row < m_list->count(); row++) {
-        m_list->item(row)->setHidden(true);
-    }
-}
-
-
 void VolumesWidget::updateProgressBar() {
     if (m_backupInProgress) {
-        ui->progressBar->setEnabled(true);
         double progress = 0.0;
         // Get progress from all workers
         for (auto const& fileManager : m_fileManagers) {
@@ -127,16 +127,24 @@ void VolumesWidget::updateProgressBar() {
         progress /= m_fileManagers.size();
         // Get percentage
         progress *= 100;
-        // Update progressbar
-        ui->progressBar->setValue(progress);
+        // Update progressDialog
+        m_progressDialog->setValue((int) progress);
 
         // If done backing up
         if (progress >= 100) {
             // Make sure all done
             waitForFinish();
+
+            m_futureList.clear();
+            if (m_cleanAfterCopy) {
+                for (auto const& manager : m_fileManagers) {
+                    QFuture<void> future = QtConcurrent::run(m_fileManagers.front(), &FileManager::startClean);
+                    m_futureList.append(future);
+                }
+            }
+
             // Reset states
             m_backupInProgress = false;
-            ui->progressBar->setEnabled(false);
             // Get time elapsed
             auto timeElapsed = m_time.elapsed();
             // Display messagebox
@@ -245,7 +253,7 @@ int VolumesWidget::displayNoVolumeSelectedWarning() {
 
     QMessageBox* msgBox = new QMessageBox(
             QMessageBox::Warning,
-            "Backup path not valid",
+            "No volume selected",
             message,
             QMessageBox::Ok,
             this,
@@ -253,5 +261,27 @@ int VolumesWidget::displayNoVolumeSelectedWarning() {
 
     return msgBox->exec();
 }
+
+int VolumesWidget::displaySourcePathNotWritableWarning() {
+    QString message = "";
+    message += "Can't run backup!\n";
+    message += "Source path is not writable and therefore can't be cleaned\n";
+    message += "Check your permissions or change the settings!";
+
+    QMessageBox* msgBox = new QMessageBox(
+            QMessageBox::Warning,
+            "Source path not writable",
+            message,
+            QMessageBox::Ok,
+            this,
+            Qt::Sheet);
+
+    return msgBox->exec();
+}
+
+void VolumesWidget::setCleanAfterCopy(bool b) {
+    m_cleanAfterCopy = b;
+}
+
 
 

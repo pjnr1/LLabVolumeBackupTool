@@ -10,7 +10,7 @@
     <x>0</x>
     <y>0</y>
     <width>550</width>
-    <height>127</height>
+    <height>150</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -46,6 +46,13 @@
          </widget>
         </item>
        </layout>
+      </item>
+      <item>
+       <widget class="QCheckBox" name="cleanCheckBox">
+        <property name="text">
+         <string>Clean source after copy?</string>
+        </property>
+       </widget>
       </item>
       <item>
        <spacer name="verticalSpacer">

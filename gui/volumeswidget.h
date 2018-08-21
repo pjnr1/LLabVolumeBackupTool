@@ -9,6 +9,7 @@
 #include <QtConcurrent/QtConcurrent>
 #include <map>
 #include <QProgressDialog>
+#include <QDateTime>
 
 namespace Ui {
 class VolumesWidget;
@@ -23,8 +24,7 @@ public:
     ~VolumesWidget();
 
     void setBackupPath(const QString& path);
-
-
+    void setCleanAfterCopy(bool b);
 
 private:
     Ui::VolumesWidget *ui;
@@ -32,14 +32,16 @@ private:
     std::map<QListWidgetItem*,QStorageInfo*> m_listMap;
     VolumeManager* m_vm;
 
+    QProgressDialog* m_progressDialog;
+
     QList<QStorageInfo> m_volumes;
     bool m_backupInProgress = false;
     QString m_backupBasePath;
+    bool m_cleanAfterCopy;
 
     std::vector<FileManager*> m_fileManagers;
     QList<QFuture<void>> m_futureList;
 
-    void hideAll();
     void waitForFinish();
     QString getBackupDoneMsg(int timeElapsed);
 
@@ -49,6 +51,7 @@ private:
     int displayBackupPathNotWritableWarning();
     int displayAreYouSureToRunQuestion();
     int displayNoVolumeSelectedWarning();
+    int displaySourcePathNotWritableWarning();
 
 private slots:
     void refreshMountedVolumes();

@@ -47,4 +47,5 @@ void MainWindow::exitApplication() {
 
 void MainWindow::updateSettings() {
     m_volumesWidget->setBackupPath(m_settingsDialog->getBackupPath());
+    m_volumesWidget->setCleanAfterCopy(m_settingsDialog->getCleanAfterCopy());
 }
