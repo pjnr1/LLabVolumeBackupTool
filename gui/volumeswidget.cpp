@@ -85,6 +85,7 @@ void VolumesWidget::initiateBackup() {
 
         m_progressDialog = new QProgressDialog("Copying files...", "Abort", 0, 100, this);
         m_progressDialog->setWindowModality(Qt::WindowModal);
+        m_progressDialog->resize(400, m_progressDialog->height());
 
         for (auto const& v : m_list->selectedItems()) {
             auto it = m_listMap.find(v);
@@ -95,11 +96,12 @@ void VolumesWidget::initiateBackup() {
                     displaySourcePathNotWritableWarning();
                     return;
                 }
-                m_fileManagers.emplace_back(new FileManager());
-                m_fileManagers.front()->setSource(vol->rootPath());
-                m_fileManagers.front()->setDestination(m_backupBasePath);
-                m_fileManagers.front()->getSizeToCopy();
-                QFuture<void> future = QtConcurrent::run(m_fileManagers.front(), &FileManager::startCopy);
+                auto fm = new FileManager();
+                fm->setSource(vol->rootPath());
+                fm->setDestination(m_backupBasePath);
+                fm->getSizeToCopy();
+                QFuture<void> future = QtConcurrent::run(fm, &FileManager::startCopy);
+                m_fileManagers.push_back(fm);
                 m_futureList.append(future);
             }
         }
@@ -129,6 +131,18 @@ void VolumesWidget::updateProgressBar() {
         progress *= 100;
         // Update progressDialog
         m_progressDialog->setValue((int) progress);
+
+        // If Backup cancelled
+        if (m_progressDialog->wasCanceled()) {
+            // Close progressDialog
+            m_progressDialog->close();
+            // Run cancelled backup routine
+            cancelBackup();
+            // Reset states
+            m_backupInProgress = false;
+            // Display messagebox
+            QMessageBox::information(this, "Cancelled.", getCancelledMsg(), QMessageBox::Ok);
+        }
 
         // If done backing up
         if (progress >= 100) {
@@ -165,6 +179,16 @@ void VolumesWidget::waitForFinish() {
     }
 }
 
+void VolumesWidget::cancelBackup() {
+    for (auto& f : m_futureList) {
+        f.cancel();
+    }
+}
+
+void VolumesWidget::setCleanAfterCopy(bool b) {
+    m_cleanAfterCopy = b;
+}
+
 void VolumesWidget::setBackupPath(const QString &path) {
     m_backupBasePath = path;
 }
@@ -186,6 +210,10 @@ QString VolumesWidget::getBackupDoneMsg(int timeElapsed) {
         message += " milliseconds.\n";
     }
     return message;
+}
+
+QString VolumesWidget::getCancelledMsg() {
+    return "Cancelled backup!";
 }
 
 int VolumesWidget::displayBackupPathNotFoundWarning() {
@@ -283,10 +311,6 @@ int VolumesWidget::displaySourcePathNotWritableWarning() {
             Qt::Sheet);
 
     return msgBox->exec();
-}
-
-void VolumesWidget::setCleanAfterCopy(bool b) {
-    m_cleanAfterCopy = b;
 }
 
 

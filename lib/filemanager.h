@@ -25,6 +25,7 @@ public:
 
     void setSource(const QString& path);
     void setDestination(const QString& path);
+    QString getDestination();
 
 private:
 

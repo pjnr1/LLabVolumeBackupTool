@@ -20,7 +20,7 @@ class VolumesWidget : public QWidget
     Q_OBJECT
 
 public:
-    explicit VolumesWidget(QWidget *parent = 0);
+    explicit VolumesWidget(QWidget *parent = nullptr);
     ~VolumesWidget();
 
     void setBackupPath(const QString& path);
@@ -43,8 +43,9 @@ private:
     QList<QFuture<void>> m_futureList;
 
     void waitForFinish();
+    void cancelBackup();
     QString getBackupDoneMsg(int timeElapsed);
-
+    QString getCancelledMsg();
     QTime m_time;
 
     int displayBackupPathNotFoundWarning();

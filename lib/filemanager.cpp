@@ -133,7 +133,7 @@ bool FileManager::startCopy(const QString &source, const QString &dest) {
 
     dir.mkdir(newDest);
     if (isFolder(newDest)) {
-        return copy(source,newDest,true);
+        return copy(source, newDest, true);
     } else {
         return false;
     }
@@ -162,4 +162,8 @@ void FileManager::setSource(const QString& path) {
 
 void FileManager::setDestination(const QString& path) {
     m_destination = path;
+}
+
+QString FileManager::getDestination() {
+    return m_destination;
 }
