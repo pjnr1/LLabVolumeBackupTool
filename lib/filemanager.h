@@ -11,18 +11,19 @@ class FileManager : public QObject {
 
 public:
     double getProgress();
-    unsigned long getSizeToCopy(bool recursive = true);
-    unsigned long getSizeToCopy(const QString &source, bool recursive = true);
+    unsigned long getSizeToCopy();
+    unsigned long getSizeToCopy(const QString &source);
     bool startCopy();
     bool startCopy(const QString &source, const QString &dest);
     bool startClean();
     bool startClean(const QString &source);
-    bool copy(const QString &source, const QString &dest, bool recursive = true);
+    bool copy(const QString &source, const QString &dest);
     bool remove(const QString &source);
-    bool copyFile(const QString& source, const QString& dest, bool override = true);
+    bool copyFile(const QString& source, const QString& dest, bool override);
     bool fileExists(const QString& path);
     bool isFolder(const QString& path);
 
+    void setRecursive(bool r);
     void setSource(const QString& path);
     void setDestination(const QString& path);
     QString getDestination();
@@ -33,11 +34,12 @@ private:
                            QCryptographicHash::Algorithm hashAlgorithm);
 
 
-    void calcSizeToCopy(const QString &source, bool recursive = true);
+    void calcSizeToCopy(const QString &source);
 
     unsigned long m_totalFileSize = 0;
     unsigned long m_copiedSoFar = 0;
 
+    bool m_recursive = true;
     QString m_source;
     QString m_destination;
 };

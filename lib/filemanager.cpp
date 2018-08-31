@@ -30,7 +30,7 @@ bool FileManager::copyFile(const QString &source, const QString &dest, bool over
  * @param dest
  * @return
  */
-bool FileManager::copy(const QString &source, const QString &dest, bool recursive) {
+bool FileManager::copy(const QString &source, const QString &dest) {
     auto dir = QDir(source);
     QFileInfoList files = dir.entryInfoList(QDir::AllEntries | QDir::NoDotAndDotDot);
 
@@ -40,11 +40,11 @@ bool FileManager::copy(const QString &source, const QString &dest, bool recursiv
     }
     for(const auto& f : files) {
         if (isFolder(f.filePath())) {
-            if (recursive) {
-                copy(f.filePath(), dest + "/" +  f.fileName(), recursive);
+            if (m_recursive) {
+                copy(f.filePath(), dest + "/" +  f.fileName());
             }
         } else {
-            copyFile(f.filePath(), dest + "/" +  f.fileName());
+            copyFile(f.filePath(), dest + "/" +  f.fileName(), true);
             m_copiedSoFar += f.size();
         }
     }
@@ -92,13 +92,13 @@ QByteArray FileManager::getCheckSum(const QString &fileName, QCryptographicHash:
     return QByteArray();
 }
 
-void FileManager::calcSizeToCopy(const QString &source, bool recursive) {
+void FileManager::calcSizeToCopy(const QString &source) {
     auto dir = QDir(source);
     QFileInfoList files = dir.entryInfoList(QDir::AllEntries | QDir::NoDotAndDotDot);
     for(const auto& f : files) {
         if (isFolder(f.filePath())) {
-            if (recursive) {
-                calcSizeToCopy(f.filePath(), recursive);
+            if (m_recursive) {
+                calcSizeToCopy(f.filePath());
             }
         } else {
             m_totalFileSize += f.size();
@@ -106,15 +106,15 @@ void FileManager::calcSizeToCopy(const QString &source, bool recursive) {
     }
 }
 
-unsigned long FileManager::getSizeToCopy(bool recursive) {
+unsigned long FileManager::getSizeToCopy() {
     m_totalFileSize = 0;
-    calcSizeToCopy(m_source, recursive);
+    calcSizeToCopy(m_source);
     return m_totalFileSize;
 }
 
-unsigned long FileManager::getSizeToCopy(const QString &source, bool recursive) {
+unsigned long FileManager::getSizeToCopy(const QString &source) {
     m_totalFileSize = 0;
-    calcSizeToCopy(source, recursive);
+    calcSizeToCopy(source);
     return m_totalFileSize;
 }
 
@@ -133,7 +133,7 @@ bool FileManager::startCopy(const QString &source, const QString &dest) {
 
     dir.mkdir(newDest);
     if (isFolder(newDest)) {
-        return copy(source, newDest, true);
+        return copy(source, newDest);
     } else {
         return false;
     }
@@ -154,6 +154,10 @@ bool FileManager::startClean(const QString &source) {
 
 bool FileManager::startClean() {
     return startClean(m_source);
+}
+
+void FileManager::setRecursive(bool r) {
+    m_recursive = r;
 }
 
 void FileManager::setSource(const QString& path) {
