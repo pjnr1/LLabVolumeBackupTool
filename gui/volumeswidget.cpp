@@ -69,12 +69,12 @@ void VolumesWidget::initiateBackup() {
         displayNoVolumeSelectedWarning();
         return;
     }
-    auto fileInfo = QFileInfo(m_backupBasePath);
-    if (!fileInfo.exists()) {
+    auto backupPathFileInfo = QFileInfo(m_backupBasePath);
+    if (!backupPathFileInfo.exists()) {
         displayBackupPathNotFoundWarning();
         return;
     }
-    if (!fileInfo.isWritable()) {
+    if (!backupPathFileInfo.isWritable()) {
         displayBackupPathNotWritableWarning();
         return;
     }
@@ -83,29 +83,41 @@ void VolumesWidget::initiateBackup() {
         m_backupInProgress = true;
         m_time.start();
 
-        m_progressDialog = new QProgressDialog("Copying files...", "Abort", 0, 100, this);
+        m_progressDialog = new QProgressDialog("Copying files...", "Abort", 0, 100, this, Qt::Dialog);
         m_progressDialog->setWindowModality(Qt::WindowModal);
         m_progressDialog->resize(400, m_progressDialog->height());
 
-        for (auto const& v : m_list->selectedItems()) {
-            auto it = m_listMap.find(v);
-            if (it != m_listMap.end()) {
-                auto vol = it->second;
-                auto fileInfo = QFileInfo(vol->rootPath());
-                if (m_cleanAfterCopy && !fileInfo.isWritable()) {
-                    displaySourcePathNotWritableWarning();
-                    return;
-                }
-                auto fm = new FileManager();
-                fm->setSource(vol->rootPath());
-                fm->setDestination(m_backupBasePath);
-                fm->getSizeToCopy();
-                QFuture<void> future = QtConcurrent::run(fm, &FileManager::startCopy);
-                m_fileManagers.push_back(fm);
-                m_futureList.append(future);
+        for (auto const& fileInfo : getSelectedVolumes()) {
+            if (m_cleanAfterCopy && !fileInfo.isWritable()) {
+                displaySourcePathNotWritableWarning();
+                cancelBackup();
+                return;
             }
+            auto fm = new FileManager();
+            fm->setSource(fileInfo.absoluteFilePath());
+            fm->setDestination(m_backupBasePath);
+            fm->getSizeToCopy();
+            QFuture<void> future = QtConcurrent::run(fm, &FileManager::startCopy);
+            m_fileManagers.push_back(fm);
+            m_futureList.append(future);
         }
     }
+}
+
+QList<QFileInfo> VolumesWidget::getSelectedVolumes() {
+    QList<QFileInfo> listToReturn;
+
+    for (auto const& v : m_list->selectedItems()) {
+        auto it = m_listMap.find(v);
+        if (it != m_listMap.end()) {
+            auto vol = it->second;
+            auto fileInfo = QFileInfo(vol->rootPath());
+
+            listToReturn.append(fileInfo);
+        }
+    }
+
+    return listToReturn;
 }
 
 void VolumesWidget::filterList(QString filterString) {
@@ -260,6 +272,10 @@ int VolumesWidget::displayBackupPathNotWritableWarning() {
 
 int VolumesWidget::displayAreYouSureToRunQuestion() {
     QString message = "";
+    message += "You are about to copy following volumes:\n";
+    for (auto const& fileInfo : getSelectedVolumes()) {
+        message += fileInfo.absoluteFilePath() + "\n";
+    }
     message += "Destination path is: ";
     if (!m_backupBasePath.isEmpty()) {
         message += "Path: ";

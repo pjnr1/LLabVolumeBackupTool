@@ -48,6 +48,8 @@ private:
     QString getCancelledMsg();
     QTime m_time;
 
+    QList<QFileInfo> getSelectedVolumes();
+
     int displayBackupPathNotFoundWarning();
     int displayBackupPathNotWritableWarning();
     int displayAreYouSureToRunQuestion();
