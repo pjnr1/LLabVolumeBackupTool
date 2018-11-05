@@ -97,6 +97,7 @@ void VolumesWidget::initiateBackup() {
             fm->setSource(fileInfo.absoluteFilePath());
             fm->setDestination(m_backupBasePath);
             fm->getSizeToCopy();
+            QObject::connect(fm, &FileManager::log, this, &VolumesWidget::printSignal);
             QFuture<void> future = QtConcurrent::run(fm, &FileManager::startCopy);
             m_fileManagers.push_back(fm);
             m_futureList.append(future);
@@ -163,11 +164,17 @@ void VolumesWidget::updateProgressBar() {
 
             m_futureList.clear();
             if (m_cleanAfterCopy) {
+                // Change modal status-indicator
+                m_progressDialog->setLabelText("Cleaning sources..");
+                // Start cleaning for each file-manager
                 for (auto const& manager : m_fileManagers) {
-                    QFuture<void> future = QtConcurrent::run(m_fileManagers.front(), &FileManager::startClean);
+                    QFuture<void> future = QtConcurrent::run(manager, &FileManager::startClean);
                     m_futureList.append(future);
                 }
             }
+
+            // Wait for cleaning to finish
+            waitForFinish();
 
             // Reset states
             m_backupInProgress = false;
@@ -329,5 +336,8 @@ int VolumesWidget::displaySourcePathNotWritableWarning() {
     return msgBox->exec();
 }
 
+void VolumesWidget::printSignal(QString text) {
+    std::cout << text.toStdString() << std::endl;
+}
 
 

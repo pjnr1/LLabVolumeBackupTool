@@ -61,6 +61,8 @@ private slots:
     void initiateBackup();
     void filterList(QString filterString);
     void updateProgressBar();
+protected slots:
+    void printSignal(QString text);
 };
 
 #endif // VOLUMESWIDGET_H

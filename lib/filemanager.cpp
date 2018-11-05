@@ -18,10 +18,13 @@ bool FileManager::copyFile(const QString &source, const QString &dest, bool over
             return false;
         }
     }
-    QFile::copy(source, dest);
-    auto hashAlgo = QCryptographicHash::Algorithm::Md5;
-    return (getCheckSum(source, hashAlgo) == getCheckSum(dest, hashAlgo));
-
+    bool result = QFile::copy(source, dest);
+    if (result) {
+        emit log("Copied: " + source + " to " + dest);
+    } else {
+        emit log("Error copying: " + source + " to " + dest);
+    }
+    return result;
 }
 
 /**
@@ -147,7 +150,8 @@ bool FileManager::startClean(const QString &source) {
     auto dir = QDir(source);
     QFileInfoList files = dir.entryInfoList(QDir::AllEntries | QDir::NoDotAndDotDot);
     for(const auto& f : files) {
-        dir.remove(f.filePath());
+        QFile::remove(f.filePath());
+        emit log("Deleted: " + f.filePath());
     }
     return true;
 }
@@ -156,7 +160,11 @@ bool FileManager::startClean() {
     return startClean(m_source);
 }
 
-void FileManager::setRecursive(bool r) {
+bool FileManager::recursive() {
+    return m_recursive;
+}
+
+void FileManager::recursive(bool r) {
     m_recursive = r;
 }
 
@@ -170,4 +178,7 @@ void FileManager::setDestination(const QString& path) {
 
 QString FileManager::getDestination() {
     return m_destination;
+}
+QString FileManager::getSource() {
+    return m_source;
 }

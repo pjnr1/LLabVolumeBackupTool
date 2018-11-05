@@ -28,5 +28,6 @@ TEST_CASE("basic member tests","[full],[filemanager]") {
     }
 
     SECTION("clean up after test case") {
+        REQUIRE(fm.re)
     }
 }

@@ -23,10 +23,16 @@ public:
     bool fileExists(const QString& path);
     bool isFolder(const QString& path);
 
-    void setRecursive(bool r);
+    bool recursive();
+    void recursive(bool r);
     void setSource(const QString& path);
     void setDestination(const QString& path);
+
     QString getDestination();
+    QString getSource();
+
+signals:
+    Q_SIGNAL void log(const QString& text);
 
 private:
 
@@ -42,6 +48,7 @@ private:
     bool m_recursive = true;
     QString m_source;
     QString m_destination;
+
 };
 
 
