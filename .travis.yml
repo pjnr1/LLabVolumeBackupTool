@@ -11,6 +11,8 @@ branches:
     - master
         
 env:
+  global:
+    - CODECOV_TOKEN="00f5e9e6-630b-491b-937c-c81c3f316480"
   matrix:
     - CONFIG=-release
         
@@ -26,3 +28,6 @@ before_script:
   - cmake --build . # make
 
 script: make
+
+after_success:
+  - bash <(curl -s https://codecov.io/bash) || echo "Codecov did not collect coverage reports"
